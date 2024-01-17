@@ -22,7 +22,6 @@
 #include <algorithm>
 #include "butil/logging.h"
 
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/reflection_ops.h>

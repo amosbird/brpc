@@ -292,26 +292,6 @@ static void* GlobalUpdate(void*) {
     return NULL;
 }
 
-static void BaiduStreamingLogHandler(google::protobuf::LogLevel level,
-                                     const char* filename, int line,
-                                     const std::string& message) {
-    switch (level) {
-    case google::protobuf::LOGLEVEL_INFO:
-        LOG(INFO) << filename << ':' << line << ' ' << message;
-        return;
-    case google::protobuf::LOGLEVEL_WARNING:
-        LOG(WARNING) << filename << ':' << line << ' ' << message;
-        return;
-    case google::protobuf::LOGLEVEL_ERROR:
-        LOG(ERROR) << filename << ':' << line << ' ' << message;
-        return;
-    case google::protobuf::LOGLEVEL_FATAL:
-        LOG(FATAL) << filename << ':' << line << ' ' << message;
-        return;
-    }
-    CHECK(false) << filename << ':' << line << ' ' << message;
-}
-
 static void GlobalInitializeOrDieImpl() {
     //////////////////////////////////////////////////////////////////
     // Be careful about usages of gflags inside this function which //
@@ -325,9 +305,6 @@ static void GlobalInitializeOrDieImpl() {
             (oldact.sa_handler == NULL && oldact.sa_sigaction == NULL)) {
         CHECK(SIG_ERR != signal(SIGPIPE, SIG_IGN));
     }
-
-    // Make GOOGLE_LOG print to comlog device
-    SetLogHandler(&BaiduStreamingLogHandler);
 
     // Setting the variable here does not work, the profiler probably check
     // the variable before main() for only once.

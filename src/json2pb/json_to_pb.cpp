@@ -534,7 +534,7 @@ bool JsonValueToProtoMessage(const BUTIL_RAPIDJSON_NAMESPACE::Value& json_value,
     for (int i = 0; i < descriptor->extension_range_count(); ++i) {
         const google::protobuf::Descriptor::ExtensionRange*
             ext_range = descriptor->extension_range(i);
-        for (int tag_number = ext_range->start; tag_number < ext_range->end;
+        for (int tag_number = ext_range->start_number(); tag_number < ext_range->end_number();
              ++tag_number) {
             const google::protobuf::FieldDescriptor* field =
                 reflection->FindKnownExtensionByNumber(tag_number);
