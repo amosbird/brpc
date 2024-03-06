@@ -200,7 +200,7 @@ Sampler::Sampler() : _used(true) {}
 
 Sampler::~Sampler() {}
 
-DEFINE_bool(bvar_enable_sampling, true, "is enable bvar sampling");
+DEFINE_bool(bvar_enable_sampling, false, "is enable bvar sampling");
 
 void Sampler::schedule() {
     // since the SamplerCollector is initialized before the program starts
