@@ -406,22 +406,25 @@ static pthread_once_t init_sys_mutex_lock_once = PTHREAD_ONCE_INIT;
 // causing deadlock temporarily. This fix is hardly portable.
 
 static void init_sys_mutex_lock() {
-#if defined(OS_LINUX)
-    // TODO: may need dlvsym when GLIBC has multiple versions of a same symbol.
-    // http://blog.fesnel.com/blog/2009/08/25/preloading-with-multiple-symbol-versions
-    if (_dl_sym) {
-        sys_pthread_mutex_lock = (MutexOp)_dl_sym(RTLD_NEXT, "pthread_mutex_lock", (void*)init_sys_mutex_lock);
-        sys_pthread_mutex_unlock = (MutexOp)_dl_sym(RTLD_NEXT, "pthread_mutex_unlock", (void*)init_sys_mutex_lock);
-    } else {
-        // _dl_sym may be undefined reference in some system, fallback to dlsym
-        sys_pthread_mutex_lock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_lock");
-        sys_pthread_mutex_unlock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_unlock");
-    }
-#elif defined(OS_MACOSX)
-    // TODO: look workaround for dlsym on mac
-    sys_pthread_mutex_lock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_lock");
-    sys_pthread_mutex_unlock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_unlock");
-#endif
+    sys_pthread_mutex_lock = pthread_mutex_lock;
+    sys_pthread_mutex_unlock = pthread_mutex_unlock;
+
+// #if defined(OS_LINUX)
+//     // TODO: may need dlvsym when GLIBC has multiple versions of a same symbol.
+//     // http://blog.fesnel.com/blog/2009/08/25/preloading-with-multiple-symbol-versions
+//     if (_dl_sym) {
+//         sys_pthread_mutex_lock = (MutexOp)_dl_sym(RTLD_NEXT, "pthread_mutex_lock", (void*)init_sys_mutex_lock);
+//         sys_pthread_mutex_unlock = (MutexOp)_dl_sym(RTLD_NEXT, "pthread_mutex_unlock", (void*)init_sys_mutex_lock);
+//     } else {
+//         // _dl_sym may be undefined reference in some system, fallback to dlsym
+//         sys_pthread_mutex_lock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_lock");
+//         sys_pthread_mutex_unlock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_unlock");
+//     }
+// #elif defined(OS_MACOSX)
+//     // TODO: look workaround for dlsym on mac
+//     sys_pthread_mutex_lock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_lock");
+//     sys_pthread_mutex_unlock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_unlock");
+// #endif
 }
 
 // Make sure pthread functions are ready before main().
@@ -815,11 +818,11 @@ int bthread_mutex_unlock(bthread_mutex_t* m) {
     return 0;
 }
 
-int pthread_mutex_lock (pthread_mutex_t *__mutex) {
-    return bthread::pthread_mutex_lock_impl(__mutex);
-}
-int pthread_mutex_unlock (pthread_mutex_t *__mutex) {
-    return bthread::pthread_mutex_unlock_impl(__mutex);
-}
+// int pthread_mutex_lock (pthread_mutex_t *__mutex) {
+//     return bthread::pthread_mutex_lock_impl(__mutex);
+// }
+// int pthread_mutex_unlock (pthread_mutex_t *__mutex) {
+//     return bthread::pthread_mutex_unlock_impl(__mutex);
+// }
 
 }  // extern "C"
