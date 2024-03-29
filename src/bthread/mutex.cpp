@@ -437,47 +437,56 @@ static pthread_once_t init_sys_mutex_lock_once = PTHREAD_ONCE_INIT;
 // causing deadlock temporarily. This fix is hardly portable.
 
 static void init_sys_mutex_lock() {
+    sys_pthread_mutex_init = pthread_mutex_init;
+    sys_pthread_mutex_destroy = pthread_mutex_destroy;
+    sys_pthread_mutex_lock = pthread_mutex_lock;
+    sys_pthread_mutex_trylock = pthread_mutex_trylock;
+    sys_pthread_mutex_unlock = pthread_mutex_unlock;
+#if HAS_PTHREAD_MUTEX_TIMEDLOCK
+    sys_pthread_mutex_timedlock = pthread_mutex_timedlock;
+#endif
+
 // When bRPC library is linked as a shared library, need to make sure bRPC
 // shared library is loaded before the pthread shared library. Otherwise,
 // it may cause runtime error: undefined symbol: pthread_mutex_xxx.
 // Alternatively, static linking can also avoid this problem.
-#if defined(OS_LINUX)
-    // TODO: may need dlvsym when GLIBC has multiple versions of a same symbol.
-    // http://blog.fesnel.com/blog/2009/08/25/preloading-with-multiple-symbol-versions
-    if (_dl_sym) {
-        sys_pthread_mutex_init = (MutexInitOp)_dl_sym(
-            RTLD_NEXT, "pthread_mutex_init", (void*)init_sys_mutex_lock);
-        sys_pthread_mutex_destroy = (MutexOp)_dl_sym(
-            RTLD_NEXT, "pthread_mutex_destroy", (void*)init_sys_mutex_lock);
-        sys_pthread_mutex_lock = (MutexOp)_dl_sym(
-            RTLD_NEXT, "pthread_mutex_lock", (void*)init_sys_mutex_lock);
-        sys_pthread_mutex_unlock = (MutexOp)_dl_sym(
-            RTLD_NEXT, "pthread_mutex_unlock", (void*)init_sys_mutex_lock);
-        sys_pthread_mutex_trylock = (MutexOp)_dl_sym(
-            RTLD_NEXT, "pthread_mutex_trylock", (void*)init_sys_mutex_lock);
-#if HAS_PTHREAD_MUTEX_TIMEDLOCK
-        sys_pthread_mutex_timedlock = (TimedMutexOp)_dl_sym(
-            RTLD_NEXT, "pthread_mutex_timedlock", (void*)init_sys_mutex_lock);
-#endif // HAS_PTHREAD_MUTEX_TIMEDLOCK
-    } else {
-        // _dl_sym may be undefined reference in some system, fallback to dlsym
-        sys_pthread_mutex_init = (MutexInitOp)dlsym(RTLD_NEXT, "pthread_mutex_init");
-        sys_pthread_mutex_destroy = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_destroy");
-        sys_pthread_mutex_lock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_lock");
-        sys_pthread_mutex_unlock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_unlock");
-        sys_pthread_mutex_trylock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_trylock");
-#if HAS_PTHREAD_MUTEX_TIMEDLOCK
-        sys_pthread_mutex_timedlock = (TimedMutexOp)dlsym(RTLD_NEXT, "pthread_mutex_timedlock");
-#endif // HAS_PTHREAD_MUTEX_TIMEDLOCK
-    }
-#elif defined(OS_MACOSX)
-    // TODO: look workaround for dlsym on mac
-    sys_pthread_mutex_init = (MutexInitOp)dlsym(RTLD_NEXT, "pthread_mutex_init");
-    sys_pthread_mutex_destroy = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_destroy");
-    sys_pthread_mutex_lock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_lock");
-    sys_pthread_mutex_trylock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_trylock");
-    sys_pthread_mutex_unlock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_unlock");
-#endif
+// #if defined(OS_LINUX)
+//     // TODO: may need dlvsym when GLIBC has multiple versions of a same symbol.
+//     // http://blog.fesnel.com/blog/2009/08/25/preloading-with-multiple-symbol-versions
+//     if (_dl_sym) {
+//         sys_pthread_mutex_init = (MutexInitOp)_dl_sym(
+//             RTLD_NEXT, "pthread_mutex_init", (void*)init_sys_mutex_lock);
+//         sys_pthread_mutex_destroy = (MutexOp)_dl_sym(
+//             RTLD_NEXT, "pthread_mutex_destroy", (void*)init_sys_mutex_lock);
+//         sys_pthread_mutex_lock = (MutexOp)_dl_sym(
+//             RTLD_NEXT, "pthread_mutex_lock", (void*)init_sys_mutex_lock);
+//         sys_pthread_mutex_unlock = (MutexOp)_dl_sym(
+//             RTLD_NEXT, "pthread_mutex_unlock", (void*)init_sys_mutex_lock);
+//         sys_pthread_mutex_trylock = (MutexOp)_dl_sym(
+//             RTLD_NEXT, "pthread_mutex_trylock", (void*)init_sys_mutex_lock);
+// #if HAS_PTHREAD_MUTEX_TIMEDLOCK
+//         sys_pthread_mutex_timedlock = (TimedMutexOp)_dl_sym(
+//             RTLD_NEXT, "pthread_mutex_timedlock", (void*)init_sys_mutex_lock);
+// #endif // HAS_PTHREAD_MUTEX_TIMEDLOCK
+//     } else {
+//         // _dl_sym may be undefined reference in some system, fallback to dlsym
+//         sys_pthread_mutex_init = (MutexInitOp)dlsym(RTLD_NEXT, "pthread_mutex_init");
+//         sys_pthread_mutex_destroy = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_destroy");
+//         sys_pthread_mutex_lock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_lock");
+//         sys_pthread_mutex_unlock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_unlock");
+//         sys_pthread_mutex_trylock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_trylock");
+// #if HAS_PTHREAD_MUTEX_TIMEDLOCK
+//         sys_pthread_mutex_timedlock = (TimedMutexOp)dlsym(RTLD_NEXT, "pthread_mutex_timedlock");
+// #endif // HAS_PTHREAD_MUTEX_TIMEDLOCK
+//     }
+// #elif defined(OS_MACOSX)
+//     // TODO: look workaround for dlsym on mac
+//     sys_pthread_mutex_init = (MutexInitOp)dlsym(RTLD_NEXT, "pthread_mutex_init");
+//     sys_pthread_mutex_destroy = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_destroy");
+//     sys_pthread_mutex_lock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_lock");
+//     sys_pthread_mutex_trylock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_trylock");
+//     sys_pthread_mutex_unlock = (MutexOp)dlsym(RTLD_NEXT, "pthread_mutex_unlock");
+// #endif
 }
 
 // Make sure pthread functions are ready before main().
