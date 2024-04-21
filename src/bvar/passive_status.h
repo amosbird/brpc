@@ -175,7 +175,8 @@ protected:
             rc == 0 &&
             _series_sampler == NULL &&
             FLAGS_save_series) {
-            _series_sampler = new SeriesSampler(this);
+            _series_sampler_holder = std::make_unique<SeriesSampler>(this);
+            _series_sampler = _series_sampler_holder.get();
             _series_sampler->schedule();
         }
         return rc;
@@ -185,6 +186,7 @@ private:
     Tp (*_getfn)(void*);
     void* _arg;
     sampler_type* _sampler;
+    std::unique_ptr<SeriesSampler> _series_sampler_holder;
     SeriesSampler* _series_sampler;
 };
 
