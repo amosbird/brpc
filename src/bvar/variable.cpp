@@ -720,7 +720,7 @@ DEFINE_string(mbvar_dump_format, "common", "Dump mbvar write format");
 #if !defined(BVAR_NOT_LINK_DEFAULT_VARIABLES)
 // Expose bvar-releated gflags so that they're collected by noah.
 // Maybe useful when debugging process of monitoring.
-static GFlag s_gflag_bvar_dump_interval("bvar_dump_interval");
+// static GFlag s_gflag_bvar_dump_interval("bvar_dump_interval");
 #endif
 
 // The background thread to export all bvar periodically.
@@ -968,8 +968,8 @@ void to_underscored_name(std::string* name, const butil::StringPiece& src) {
 #if !defined(BVAR_NOT_LINK_DEFAULT_VARIABLES)
 // Without these, default_variables.o are stripped.
 // At least working in gcc 4.8
-extern int do_link_default_variables;
-int dummy = do_link_default_variables;
+// extern int do_link_default_variables;
+// int dummy = do_link_default_variables;
 #endif
 
 }  // namespace bvar

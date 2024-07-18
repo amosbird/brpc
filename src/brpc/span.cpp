@@ -350,8 +350,8 @@ static bool g_span_ending = false;  // don't open span again if this var is true
 static SpanDB* g_span_db = NULL;
 bool has_span_db() { return !!g_span_db; }
 bvar::CollectorSpeedLimit g_span_sl = BVAR_COLLECTOR_SPEED_LIMIT_INITIALIZER;
-static bvar::DisplaySamplingRatio s_display_sampling_ratio(
-    "rpcz_sampling_ratio", &g_span_sl);
+// static bvar::DisplaySamplingRatio s_display_sampling_ratio(
+//     "rpcz_sampling_ratio", &g_span_sl);
 
 struct SpanEarlier {
     bool operator()(bvar::Collected* c1, bvar::Collected* c2) const {
