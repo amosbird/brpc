@@ -50,8 +50,8 @@ static butil::static_atomic<int64_t> s_stack_count = BUTIL_STATIC_ATOMIC_INIT(0)
 static int64_t get_stack_count(void*) {
     return s_stack_count.load(butil::memory_order_relaxed);
 }
-static bvar::PassiveStatus<int64_t> bvar_stack_count(
-    "bthread_stack_count", get_stack_count, NULL);
+// static bvar::PassiveStatus<int64_t> bvar_stack_count(
+//     "bthread_stack_count", get_stack_count, NULL);
 
 int allocate_stack_storage(StackStorage* s, int stacksize_in, int guardsize_in) {
     const static int PAGESIZE = getpagesize();

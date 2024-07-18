@@ -253,23 +253,23 @@ static void PrintEnabledProfilers(std::ostream& os, void*) {
     os << "contention";
 }
 
-static bvar::PassiveStatus<std::string> s_lb_st(
-    "rpc_load_balancer", PrintSupportedLB, NULL);
+// static bvar::PassiveStatus<std::string> s_lb_st(
+//     "rpc_load_balancer", PrintSupportedLB, NULL);
 
-static bvar::PassiveStatus<std::string> s_ns_st(
-    "rpc_naming_service", PrintSupportedNS, NULL);
+// static bvar::PassiveStatus<std::string> s_ns_st(
+//     "rpc_naming_service", PrintSupportedNS, NULL);
 
-static bvar::PassiveStatus<std::string> s_proto_st(
-    "rpc_protocols", PrintSupportedProtocols, NULL);
+// static bvar::PassiveStatus<std::string> s_proto_st(
+//     "rpc_protocols", PrintSupportedProtocols, NULL);
 
-static bvar::PassiveStatus<std::string> s_comp_st(
-    "rpc_compressions", PrintSupportedCompressions, NULL);
+// static bvar::PassiveStatus<std::string> s_comp_st(
+//     "rpc_compressions", PrintSupportedCompressions, NULL);
 
-static bvar::PassiveStatus<std::string> s_cksum_st(
-    "rpc_checksums", PrintSupportedChecksums, NULL);
+// static bvar::PassiveStatus<std::string> s_cksum_st(
+//     "rpc_checksums", PrintSupportedChecksums, NULL);
 
-static bvar::PassiveStatus<std::string> s_prof_st(
-    "rpc_profilers", PrintEnabledProfilers, NULL);
+// static bvar::PassiveStatus<std::string> s_prof_st(
+//     "rpc_profilers", PrintEnabledProfilers, NULL);
 
 static int32_t GetConnectionCount(void* arg) {
     ServerStatistics ss;
@@ -685,7 +685,7 @@ int Server::InitALPNOptions(const ServerSSLOptions* options) {
     if (options == nullptr) {
         LOG(ERROR) << "Fail to init alpn options, ssl options is nullptr.";
         return -1;
-    }   
+    }
 
     std::string raw_protocol;
     const std::string& alpns = options->alpns;
