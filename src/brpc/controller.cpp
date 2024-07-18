@@ -113,8 +113,8 @@ static void PrintRevision(std::ostream& os, void*) {
     os << "undefined";
 #endif
 }
-static bvar::PassiveStatus<std::string> s_rpc_revision(
-    "rpc_revision", PrintRevision, NULL);
+// static bvar::PassiveStatus<std::string> s_rpc_revision(
+//     "rpc_revision", PrintRevision, NULL);
 
 static const int RETRY_AVOIDANCE = 8;
 
