@@ -481,6 +481,11 @@ void Controller::SetFailed(int error_code, const char* reason_fmt, ...) {
     UpdateResponseHeader(this);
 }
 
+void Controller::SetException(std::string serialized_exception) {
+    _error_code = brpc::EEXCEPTION;
+    _error_text = std::move(serialized_exception);
+}
+
 void Controller::CloseConnection(const char* reason_fmt, ...) {
     if (_error_code == 0) {
         _error_code = ECLOSE;

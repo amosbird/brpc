@@ -531,7 +531,9 @@ public:
     void SetFailed(const std::string& reason) override;
     void SetFailed(int error_code, const char* reason_fmt, ...)
         __attribute__ ((__format__ (__printf__, 3, 4)));
-    
+
+    void SetException(std::string serialized_exception);
+
     // After a call has finished, returns true if the RPC call failed.
     // The response to Channel is undefined when Failed() is true.
     // Calling Failed() before a call has finished is undefined.

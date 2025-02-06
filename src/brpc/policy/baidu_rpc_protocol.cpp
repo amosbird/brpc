@@ -775,11 +775,14 @@ void ProcessRpcResponse(InputMessageBase* msg_base) {
     const int saved_error = cntl->ErrorCode();
     do {
         if (response_meta.error_code() != 0) {
-            // If error_code is unset, default is 0 = success.
-            cntl->SetFailed(response_meta.error_code(), 
-                                  "%s", response_meta.error_text().c_str());
+            if (response_meta.error_code() == EEXCEPTION) {
+                cntl->SetException(response_meta.error_text());
+            } else {
+                cntl->SetFailed(response_meta.error_code(),
+                                "%s", response_meta.error_text().c_str());
+            }
             break;
-        } 
+        }
         // Parse response message iff error code from meta is 0
         butil::IOBuf res_buf;
         const int res_size = msg->payload.length();
