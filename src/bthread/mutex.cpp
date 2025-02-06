@@ -57,7 +57,7 @@ namespace bthread {
 EXTERN_BAIDU_VOLATILE_THREAD_LOCAL(TaskGroup*, tls_task_group);
 
 // Warm up backtrace before main().
-const butil::debug::StackTrace ALLOW_UNUSED dummy_bt;
+// const butil::debug::StackTrace ALLOW_UNUSED dummy_bt;
 
 // For controlling contentions collected per second.
 bvar::CollectorSpeedLimit g_cp_sl = BVAR_COLLECTOR_SPEED_LIMIT_INITIALIZER;
