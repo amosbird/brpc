@@ -535,7 +535,7 @@ bool JsonValueToProtoMessage(const BUTIL_RAPIDJSON_NAMESPACE::Value& json_value,
         const google::protobuf::Descriptor::ExtensionRange*
             ext_range = descriptor->extension_range(i);
 #if GOOGLE_PROTOBUF_VERSION < 4025000
-        for (int tag_number = ext_range->start; tag_number < ext_range->end; ++tag_number)
+        for (int tag_number = ext_range->start_; tag_number < ext_range->end_; ++tag_number)
 #else
         for (int tag_number = ext_range->start_number(); tag_number < ext_range->end_number(); ++tag_number)
 #endif
