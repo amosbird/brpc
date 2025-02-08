@@ -1319,7 +1319,7 @@ public:
 private:
     DefaultLogSink() = default;
     ~DefaultLogSink() override = default;
-    LoggerPtr log = getLogger("bRPC");
+    Poco::Logger * log = &::Poco::Logger::get("bRPC");
 
 friend struct DefaultSingletonTraits<DefaultLogSink>;
 };
