@@ -107,7 +107,9 @@ typedef pthread_mutex_t* MutexHandle;
 #include "butil/comlog_sink.h"
 #endif
 
+#if defined(OS_LINUX)
 #include <Common/logger_useful.h>
+#endif
 
 extern "C" {
 uint64_t BAIDU_WEAK bthread_self();
@@ -1287,7 +1289,7 @@ public:
                       const butil::StringPiece& content) override {
         return OnLogMessage(severity, file, line, "", content);
     }
-
+#if defined(OS_LINUX)
     bool OnLogMessage(int severity, const char* file,
                       int line, const char* func,
                       const butil::StringPiece& content) override {
@@ -1315,11 +1317,56 @@ public:
         }
         return true;
     }
+#else
+    bool OnLogMessage(int severity, const char* file,
+                  int line, const char* func,
+                  const butil::StringPiece& content) override {
+        std::string log;
+        if ((logging_destination & LOG_TO_SYSTEM_DEBUG_LOG) != 0 ||
+            severity >= kAlwaysPrintErrorLevel) {
+            log = LogInfoToLogStr(severity, file, line, func, content);
+            // When we're only outputting to a log file, above a certain log level, we
+            // should still output to stderr so that we can better detect and diagnose
+            // problems with unit tests, especially on the buildbots.
+            fwrite(log.data(), log.size(), 1, stderr);
+            fflush(stderr);
+            }
+        // write to log file
+        if ((logging_destination & LOG_TO_FILE) != 0) {
+            if ((FLAGS_crash_on_fatal_log && severity == BLOG_FATAL) ||
+                !FLAGS_async_log) {
+                if (log.empty()) {
+                    log = LogInfoToLogStr(severity, file, line, func, content);
+                }
+                Log2File(log);
+                } else {
+                    LogInfo info;
+                    if (log.empty()) {
+                        info.severity = severity;
+                        info.timestamp = GetTimestamp();
+                        info.file = file;
+                        info.func = func;
+                        info.line = line;
+                        info.content = content.as_string();
+                        info.raw = true;
+                    } else {
+                        info.content = std::move(log);
+                        info.raw = false;
+                    }
+                    AsyncLogger::GetInstance()->Log(std::move(info));
+                }
+        }
+        return true;
+    }
+#endif
 
 private:
     DefaultLogSink() = default;
     ~DefaultLogSink() override = default;
-    Poco::Logger * log = &::Poco::Logger::get("bRPC");
+
+#if defined(OS_LINUX)
+    LoggerPtr log = getLogger("bRPC");
+#endif
 
 friend struct DefaultSingletonTraits<DefaultLogSink>;
 };
