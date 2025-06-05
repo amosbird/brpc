@@ -1311,7 +1311,10 @@ public:
             LOG_FATAL(log, "{}", std::string_view(content.data(), content.size()));
             break;
         default:
-            std::unreachable();
+            if (severity < 0)
+                LOG_TEST(log, "[verbose severity = {}]{}", severity, std::string_view(content.data(), content.size()));
+            else
+                LOG_WARNING(log, "[unknown severity = {}]{}", severity, std::string_view(content.data(), content.size()));
         }
         return true;
     }
