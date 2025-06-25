@@ -121,7 +121,7 @@ int BAIDU_WEAK bthread_setspecific(bthread_key_t key, void* data);
 void* BAIDU_WEAK bthread_getspecific(bthread_key_t key);
 }
 
-namespace logging {
+namespace brpc::logging {
 
 DEFINE_bool(crash_on_fatal_log, false,
             "Crash process when a FATAL log is printed");
