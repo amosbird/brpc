@@ -135,6 +135,11 @@ friend struct butil::DefaultDeleter<Stream>;
     int64_t _start_idle_timer_us;
     bthread_timer_t _idle_timer;
     std::once_flag _set_host_socket_flag;
+
+    // Net bytes charged by this stream to its host socket. Feedback can race
+    // ahead of the post-Write charge, so this contribution is signed and atomic.
+    // BeforeRecycle settles it after all writers and feedback handlers finish.
+    butil::atomic<int64_t> _socket_unconsumed_size;
 };
 
 } // namespace brpc
