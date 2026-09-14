@@ -56,6 +56,7 @@ Stream::Stream()
     , _pending_buf(NULL)
     , _start_idle_timer_us(0)
     , _idle_timer(0)
+    , _socket_unconsumed_size(0)
 {
     _connect_meta.on_connect = NULL;
     CHECK_EQ(0, bthread_mutex_init(&_connect_mutex, NULL));
@@ -137,6 +138,11 @@ void Stream::BeforeRecycle(Socket *) {
     }
 
     if (_host_socket) {
+        // All fake-socket references held by writers and feedback handlers have
+        // been released. Retire only this stream's contribution, even if the
+        // connection-level limit was disabled after the bytes were charged.
+        _host_socket->_total_streams_unconsumed_size -=
+            _socket_unconsumed_size.exchange(0, butil::memory_order_relaxed);
         _host_socket->RemoveStream(id());
     }
 
@@ -347,6 +353,7 @@ int Stream::AppendIfNotFull(const butil::IOBuf &data,
     }
     if (FLAGS_socket_max_streams_unconsumed_bytes > 0) {
         _host_socket->_total_streams_unconsumed_size += data_length;
+        _socket_unconsumed_size.fetch_add(data_length, butil::memory_order_relaxed);
     }
     return 0;
 }
@@ -364,6 +371,8 @@ void Stream::SetRemoteConsumed(size_t new_remote_consumed) {
 
     if (FLAGS_socket_max_streams_unconsumed_bytes > 0) {
         _host_socket->_total_streams_unconsumed_size -= new_remote_consumed - _remote_consumed;
+        _socket_unconsumed_size.fetch_sub(
+            new_remote_consumed - _remote_consumed, butil::memory_order_relaxed);
         if (_host_socket->_total_streams_unconsumed_size > FLAGS_socket_max_streams_unconsumed_bytes) {
             if (_options.min_buf_size > 0) {
                 _cur_buf_size = _options.min_buf_size;
